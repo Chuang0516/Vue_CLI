@@ -2,11 +2,12 @@
     <div class="student">
         <h2>学生姓名：{{ name }}</h2>
         <h2>学生性别：{{ sex }}</h2>
-        <button @click="sendStudentName">把学生名给app</button>
+        <button @click="sendStudentName">把学生名给学校</button>
     </div>
 </template>
 
 <script>
+import pubsub from 'pubsub-js';
 export default {
     name: 'BaseStudent',
     data() {
@@ -17,8 +18,8 @@ export default {
     },
     methods: {
         sendStudentName() {
-            // 触发 Student 组件实例的wecreate事件
-            this.$emit('wecreate', this.name)
+            // this.$bus.$emit('wecreate', this.name);
+            pubsub.publish('hello', this.name)
         }
     }
 }
