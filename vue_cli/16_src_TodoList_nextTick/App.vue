@@ -63,7 +63,7 @@ export default {
     },
     beforeDestroy() {
         this.$bus.$off('checkTodo');
-        this.$bus.$ff('updateTodo');
+        this.$bus.$off('updateTodo');
         pubsub.unsubscribe(this.pubId);
     }
 }
