@@ -1,78 +1,98 @@
 <template>
     <div id="root">
-        <div class="page-header">
-            <TheBanner />
-        </div>
-        <hr>
-        <div class="nav-box">
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <router-link class="nav-link" to="/home" active-class="active">Home</router-link>
-                </li>
-                <li class="nav-item">
-                    <router-link class="nav-link" to="/about" active-class="active">About</router-link>
-                </li>
-            </ul>
-            <div class="card">
-                <div class="card-body">
-                    <router-view>
-
-                    </router-view>
-                </div>
-            </div>
-        </div>
+        <TodoInput @addTodo="addTodo"></TodoInput>
+        <TodoList :todos="todos"></TodoList>
+        <TodoFooter :todos="todos" @checkAllTodo="checkAllTodo" @clearAllTodo="clearAllTodo"></TodoFooter>
     </div>
 </template>
 
 <script>
-import TheBanner from './components/TheBanner'
+import pubsub from 'pubsub-js';
+import TodoInput from './components/TodoInput';
+import TodoList from './components/TodoList';
+import TodoFooter from './components/TodoFooter';
 
 export default {
     name: 'App',
-    components: { TheBanner },
+    components: { TodoInput, TodoList, TodoFooter },
     data() {
         return {
-
+            todos: JSON.parse(localStorage.getItem('todos')) || []
         }
     },
-};
+    methods: {
+        addTodo(todoObj) {
+            this.todos.unshift(todoObj);
+        },
+        checkTodo(id) {
+            this.todos.forEach(todo => {
+                if (todo.id === id) todo.done = !todo.done;
+            })
+        },
+        updateTodo(id, title) {
+            this.todos.forEach(todo => {
+                if (todo.id === id) todo.title = title;
+            })
+        },
+        deleteTodo(_, id) {
+            this.todos = this.todos.filter(todo => todo.id !== id)
+        },
+        checkAllTodo(done) {
+            this.todos.forEach(todo => {
+                todo.done = done;
+            })
+        },
+        clearAllTodo() {
+            this.todos = this.todos.filter(todo => {
+                return !todo.done;
+            })
+        },
+    },
+    watch: {
+        todos: {
+            deep: true,
+            handler(value) {
+                localStorage.setItem('todos', JSON.stringify(value));
+            }
+        }
+    },
+    mounted() {
+        this.$bus.$on('checkTodo', this.checkTodo);
+        this.$bus.$on('updateTodo', this.updateTodo);
+        this.pubId = pubsub.subscribe('deleteTodo', this.deleteTodo);
+    },
+    beforeDestroy() {
+        this.$bus.$off('checkTodo');
+        this.$bus.$ff('updateTodo');
+        pubsub.unsubscribe(this.pubId);
+    }
+}
 </script>
 
 <style>
-#root {
-    width: 80%;
-    margin: auto;
-}
-
-.nav-box {
-    display: flex;
-    width: 100%;
-}
-
-.flex-column {
-    flex: 2;
-    margin-right: 20px;
-}
-
-.nav-box .card {
-    flex: 8;
-}
-
-.panel-default {
-    flex: 8;
+* {
     margin: 0;
+    padding: 0;
 }
 
-.nav-box>.flex-column>.nav-item a.active {
-    background-color: rgb(15, 117, 177);
-    color: #fff;
+button {
+    color: rgb(255, 255, 255);
+    background-color: rgb(255, 97, 76);
+    border: none;
+    border-radius: 5px;
+    outline: none;
 }
 
-.nav-box>.flex-column>.nav-item a.active:hover {
-    background-color: rgb(15, 117, 177);
-}
-
-.nav-box>.flex-column>.nav-item a:hover {
-    background-color: rgb(243, 243, 243);
+#root {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    width: 80%;
+    margin: 20px auto;
+    padding: 10px;
+    border: 1px solid rgb(166, 166, 166);
+    box-shadow: 0px 0px 5px 1px rgb(134, 134, 134);
+    border-radius: 10px;
 }
 </style>

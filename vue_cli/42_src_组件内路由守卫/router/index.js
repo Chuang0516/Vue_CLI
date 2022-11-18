@@ -20,7 +20,7 @@ const router = new VueRouter({
       name: 'about',
       path: '/about',
       component: TheAbout,
-      meta: { title: '关于' },
+      meta: { isAuth: true, title: '关于' },
     },
     {
       name: 'home',
@@ -33,17 +33,18 @@ const router = new VueRouter({
           path: 'news',
           component: HomeNews,
           meta: { isAuth: true, title: '新闻' },
-          beforeEnter(to, from, next) {
-            if (to.meta.isAuth) {
-              if (localStorage.getItem('school') === 'wecreate') {
-                next();
-              } else {
-                alert('学校名不对，无权限查看！');
-              }
-            } else {
-              next();
-            }
-          },
+          // 独享路由守卫
+          // beforeEnter(to, from, next) {
+          //   if (to.meta.isAuth) {
+          //     if (localStorage.getItem('school') === 'wecreate') {
+          //       next();
+          //     } else {
+          //       alert('学校名不对，无权限查看！');
+          //     }
+          //   } else {
+          //     next();
+          //   }
+          // },
         },
         {
           name: 'message',
@@ -91,14 +92,14 @@ const router = new VueRouter({
 // });
 
 // 全局后置路由守卫 --- 初始化的时候、每次路由切换之后被调用
-// router.afterEach((to, from) => {
-//   console.log('后置路由守卫');
-//   console.log(to, from);
-//   if (to.meta.title) {
-//     document.title = to.meta.title;
-//   } else {
-//     document.title = 'wecreate系统';
-//   }
-// });
+router.afterEach((to, from) => {
+  console.log('后置路由守卫');
+  console.log(to, from);
+  if (to.meta.title) {
+    document.title = to.meta.title;
+  } else {
+    document.title = 'wecreate系统';
+  }
+});
 
 export default router;
